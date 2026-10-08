@@ -40,7 +40,7 @@ for suite in gameplay integration runtime delivery_regressions ui_input world_au
   "$GODOT" --headless --path . --script "res://tests/test_${suite}.gd" -- --require-assets || exit 1
 done
 python3 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pip install --require-hashes -r requirements-dev.lock
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'
 ```
 
@@ -56,6 +56,10 @@ done
 ```
 
 Ảnh mới ở `user://captures/`. `docs/screenshots/` chứa ảnh đã bàn giao. Benchmark ngắn có cap 120 FPS; không thay thế playthrough hoặc nghiệm thu mỹ thuật.
+
+Dependency Python tùy chọn được khóa trong `requirements-dev.lock`; không cần chúng để chơi bản Linux.
+Lock resolve cho Python 3.10, cài kiểm tra trên Linux/Python 3.10.21; không khóa Godot/FFmpeg/export templates.
+Khi chủ động cập nhật: `uv pip compile requirements-dev.txt --python-version 3.10 --generate-hashes -o requirements-dev.lock`, rồi cài và chạy lại tests.
 
 ## Export Linux
 
