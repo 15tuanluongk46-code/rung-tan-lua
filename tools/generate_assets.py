@@ -4,6 +4,9 @@ Run from anywhere: python3 tools/generate_assets.py
 """
 from pathlib import Path
 import random, math, shutil
+import os
+if __name__ != '__main__' or os.environ.get('RTL_ASSET_STAGING') != '1':
+    raise RuntimeError('Use tools/regenerate_assets.py; legacy generator only runs inside staging.')
 from PIL import Image, ImageDraw
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -111,7 +114,9 @@ def actor(kind,direction,frame):
     if kind=='shaman':
         d.polygon([(hx-8,hy-4),(hx-4,hy-13),(hx+2,hy-14),(hx+6,hy-4)],fill=coat,outline=INK); d.rectangle((hx-7,hy-4,hx+7,hy-3),accent); d.ellipse((22,25+bob,26,29+bob),'#aee0bb')
     arm_y=27+bob-(4 if frame==4 else 0)
+    # layer: arms
     for x in [15,31]: d.line((x,25+bob,x+(face*2 if frame==4 else 0),arm_y+4),fill=INK,width=4); d.rectangle((x-1,arm_y,x+1,arm_y+3),skin)
+    # layer: weapon
     if kind in ['player','chief','shaman','melee','smith','archer','hunter']:
         x=35 if direction!=1 else 12
         if kind in ['archer','hunter']:
@@ -260,7 +265,11 @@ for i in range(9000):
         if i%9==0: d.rectangle((x,y-6,x+1,y-5),r.choice(['#cca975','#a6bd8c','#92bcb0','#c9958e']))
 for name,x,y in [('camp',0,0),('forest',1200,0),('creek',0,800),('ruins',1200,800)]: save(full.crop((x,y,x+1200,y+800)),'terrain',name)
 
-shutil.copyfile('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',A/'fonts/DejaVuSans.ttf')
+# Canonical route-union painter supersedes historical polyline terrain above.
+from generate_world_polish import terrain
+terrain()
+
+if not (A/'fonts/DejaVuSans.ttf').is_file(): raise RuntimeError('Bundled DejaVu font required')
 license_path=Path('/usr/share/doc/fonts-dejavu-core/copyright')
 if license_path.exists(): shutil.copyfile(license_path,A/'fonts/LICENSE-DejaVu.txt')
 print('Generated 13 directional actor sheets, 25 props, 4 terrain regions, font.')

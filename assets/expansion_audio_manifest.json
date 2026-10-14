@@ -1,0 +1,38 @@
+{
+  "marsh": {
+    "path": "music/marsh.ogg",
+    "seconds": 28.0,
+    "channels": 2,
+    "sample_rate": 44100,
+    "loop": true,
+    "peak_dbfs": -7.92,
+    "true_peak_dbfs": -7.92,
+    "rms_dbfs": -18.773,
+    "boundary_delta": 0.011499,
+    "bytes": 173623
+  },
+  "ash": {
+    "path": "music/ash.ogg",
+    "seconds": 28.0,
+    "channels": 2,
+    "sample_rate": 44100,
+    "loop": true,
+    "peak_dbfs": -8.03,
+    "true_peak_dbfs": -8.03,
+    "rms_dbfs": -18.772,
+    "boundary_delta": 0.001905,
+    "bytes": 165572
+  },
+  "boss": {
+    "path": "music/boss.ogg",
+    "seconds": 28.0,
+    "channels": 2,
+    "sample_rate": 44100,
+    "loop": true,
+    "peak_dbfs": -8.25,
+    "true_peak_dbfs": -8.25,
+    "rms_dbfs": -18.776,
+    "boundary_delta": 0.006442,
+    "bytes": 175895
+  }
+}

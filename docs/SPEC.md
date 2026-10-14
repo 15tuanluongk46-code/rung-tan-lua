@@ -1,5 +1,14 @@
 # Rừng Tàn Lửa — binding delivery specification
 
+## Approved expansion — 2026-10-11
+
+User-approved Chapter II scope: map 2400×2400, six regions; retain original
+13 designs/28 chapter-I initial actors and add 5 designs/13 chapter-II actors.
+Two main quests and four optional quests total. Two new NPCs, two enemy designs,
+one two-phase boss, discovered map/journal, versioned local autosave/Continue.
+Original no-run-save/four-region-only limits below are superseded by this scope.
+See `EXPANSION_REPORT.md` for exact implementation and verification limits.
+
 Approved in conversation, 2026-10-07. Build continuously without intermediate approval. Godot 4.7.2 Linux, Vietnamese, single-player top-down detailed pixel art. Four connected handcrafted regions (camp, forest, creek, ruins), one main quest (three unique embers, light altar, return chief), two optional one-time quests (five herbs for 2 potions; hunter bag for stones + potion). Target first play 15–20 minutes, measure rather than claim.
 
 Exactly 13 distinct designs / 28 initial actors: player1, five named distinct NPCs1 each, melee goblins6, archers4, shamans2, bears2, deer3, rabbits3, birds2. No recolor-only designs. Direction-aware sprites with movement, attacks, dodge/throw/hurt/death for player; anticipation/attack/hurt/death for foes; individual NPC activity; wildlife idle/move/flee. No placeholder shapes in delivered scenes.

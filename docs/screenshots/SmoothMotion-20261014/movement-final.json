@@ -1,0 +1,85 @@
+[
+	{
+		"case": "120-off",
+		"cpu_p95_ms": 6.16,
+		"frames": 479,
+		"over33": 1,
+		"p50_ms": 8.312,
+		"p95_ms": 9.436,
+		"p99_ms": 10.737,
+		"physics_hz": 60,
+		"physics_p95_ms": 1.857,
+		"raw_physics_zero_percent": 54.4885177453027,
+		"refresh_hz": 59.7895393371582
+	},
+	{
+		"case": "60-off",
+		"cpu_p95_ms": 10.001,
+		"frames": 241,
+		"over33": 0,
+		"p50_ms": 16.667,
+		"p95_ms": 17.379,
+		"p99_ms": 17.743,
+		"physics_hz": 60,
+		"physics_p95_ms": 8.979,
+		"raw_physics_zero_percent": 0.0,
+		"refresh_hz": 59.7895393371582
+	},
+	{
+		"case": "120-interp",
+		"cpu_p95_ms": 7.051,
+		"frames": 481,
+		"over33": 0,
+		"p50_ms": 8.432,
+		"p95_ms": 8.796,
+		"p99_ms": 9.574,
+		"physics_hz": 60,
+		"physics_p95_ms": 1.938,
+		"raw_physics_zero_percent": 49.8960498960499,
+		"refresh_hz": 59.7895393371582
+	},
+	{
+		"case": "120-interp-direct",
+		"cpu_p95_ms": 10.79,
+		"frames": 481,
+		"over33": 0,
+		"p50_ms": 8.323,
+		"p95_ms": 8.878,
+		"p99_ms": 9.556,
+		"physics_hz": 60,
+		"physics_p95_ms": 1.741,
+		"raw_physics_zero_percent": 50.1039501039501,
+		"refresh_hz": 59.7895393371582
+	},
+	{
+		"case": "60-vsync-interp",
+		"cpu_p95_ms": 7.307,
+		"frames": 241,
+		"over33": 0,
+		"p50_ms": 16.666,
+		"p95_ms": 17.405,
+		"p99_ms": 17.657,
+		"physics_hz": 60,
+		"physics_p95_ms": 2.104,
+		"raw_physics_zero_percent": 0.0,
+		"refresh_hz": 59.7895393371582
+	},
+	{
+		"case": "120-no-fx",
+		"cpu_p95_ms": 7.253,
+		"frames": 481,
+		"over33": 0,
+		"p50_ms": 8.329,
+		"p95_ms": 8.883,
+		"p99_ms": 9.699,
+		"physics_hz": 60,
+		"physics_p95_ms": 3.362,
+		"raw_physics_zero_percent": 50.1039501039501,
+		"refresh_hz": 59.7895393371582
+	},
+	{
+		"case": "save-latency",
+		"p50_ms": 3.103,
+		"p95_ms": 4.345
+	}
+]

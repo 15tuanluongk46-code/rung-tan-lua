@@ -12,6 +12,12 @@ func begin(owner_game: Node, selected: String) -> void:
 	game = owner_game
 	region = selected
 	game.start_game()
+	if region in ["marsh","ash"]:
+		game.state.accept("main")
+		for id: String in ["forest","creek","ruins"]: game.state.pickup("ember_"+id,"ember",id)
+		game.state.light_altar()
+		game.state.finish_main()
+		game.continue_chapter()
 	game.player.position = game.content.centers[region]
 	game.camera.reset_smoothing()
 

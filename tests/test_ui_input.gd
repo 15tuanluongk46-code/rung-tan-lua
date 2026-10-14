@@ -12,6 +12,8 @@ func check(ok: bool, message: String) -> void:
 	if not ok:
 		failures += 1
 		printerr("FAIL: " + message)
+		if is_instance_valid(game):
+			printerr("INPUT DIAGNOSTIC mode=%s window_focus=%s physics_frame=%d" % [game.mode,root.has_focus(),Engine.get_physics_frames()])
 
 func frames(count: int) -> void:
 	for index: int in range(count): await physics_frame
@@ -23,6 +25,8 @@ func capture(name: String) -> void:
 	check(get_root().get_texture().get_image().save_png("user://captures/"+name+".png") == OK,"save " + name)
 
 func press(action: String) -> void:
+	# Inject outside physics_frame's pre-node signal to avoid tick-boundary races.
+	await process_frame
 	var event := InputEventAction.new()
 	event.action = action
 	event.pressed = true
@@ -39,6 +43,13 @@ func run() -> void:
 	root.add_child(game)
 	await frames(5)
 	await capture("menu")
+	if DisplayServer.get_name() != "headless":
+		check(root.has_focus(),"graphical test window has focus before input")
+		if not root.has_focus():
+			game.queue_free()
+			await process_frame
+			quit(2)
+			return
 	var focus: Control = root.gui_get_focus_owner()
 	check(focus is Button and focus.text == "Bắt đầu hành trình","new game button receives keyboard focus")
 	await press("ui_accept")
@@ -50,6 +61,7 @@ func run() -> void:
 	check(game.player.position.x > before.x + 20,"continuous WASD input moves through physics world")
 	var stones: int = game.state.stones
 	await press("throw")
+	await frames(4) # Stone is spent at AnimationPlayer hand-release, not on button press.
 	check(game.state.stones == stones-1,"throw input spends exactly one stone")
 	await press("dodge")
 	check(game.player.dodge_cooldown > 0,"dodge input runs action")

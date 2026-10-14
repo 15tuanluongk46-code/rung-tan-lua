@@ -1,5 +1,31 @@
 # Báo cáo bàn giao — Rừng Tàn Lửa
 
+> ActionSync 12/10: ACTION_SYNC_REPORT.md addresses combined input/modal timing,
+> shared spear aim/reach, stall-safe contact and swept boss damage. Historical
+> WEAPON_BUILD_TEST_REVIEW.md describes the previous build, not current fixed code.
+
+> Weapon animation polish 12/10: WEAPON_POLISH_REPORT.md — physical layered
+> weapon motion and delayed contact; old arc-only player animation superseded.
+
+> Gameplay depth 12/10: xem GAMEPLAY_DEPTH_REPORT.md. Charge/perfect dodge,
+> AI rush/coal zones, pending reward, save v1→v2, phase-II boss combos.
+> Human engagement acceptance remains pending; playtest sheet in PLAYTEST_GUIDE.md.
+
+> 12/10/2026: combat/save/world/UI fixes and regression evidence in
+> [QUALITY_FIX_REPORT.md](QUALITY_FIX_REPORT.md). Older hit-stop claims were corrected
+> by implementing actual freeze/release and testing it.
+
+> Bản mở rộng 11/10/2026: xem [EXPANSION_REPORT.md](EXPANSION_REPORT.md). Map sáu vùng, hai chương, có autosave. Journey graphical Chương I 22/22 và Chương II 25/25. Các báo cáo không lưu hành trình phía dưới là lịch sử của bản gốc.
+
+> Nâng cấp hình ảnh 08/10/2026 và polish pass 11/10/2026: xem [MYSTIC_ART_DIRECTION.md](MYSTIC_ART_DIRECTION.md)
+> cho kết quả kiểm tra mới, captures và số đo GTX 1050 Ti. Hành trình graphical
+> sau nâng cấp đạt 22/22; chưa có nghiệm thu mỹ thuật bằng mắt trong phiên AI.
+
+> Cập nhật Windows 08/10/2026: đã tái hiện/sửa lỗi chặn hội thoại nhận nhiệm vụ,
+> thoát/hồi sinh, tương tác/đạn qua vật cản và inventory/journal. Kết quả hiện tại,
+> log RED/GREEN và hành trình input đến kết thúc/chơi lại ở
+> [WINDOWS_PLAY_AUDIT.md](WINDOWS_PLAY_AUDIT.md). Phần dưới là báo cáo Linux lịch sử.
+
 ## Bản đã triển khai
 
 Godot 4.7.2.stable.official.ed1daf0bf, Linux x86_64. Source và asset nguyên bản
@@ -19,6 +45,22 @@ bốn khu, nhiệm vụ chính + hai nhiệm vụ phụ, combat/AI/checkpoint/me
 | Python asset/audio suites | 7 tests pass |
 | Linux export release | Exit 0; template chính thức, PCK nhúng |
 | Linux executable từ `/tmp/opencode` ngoài project | Chạy độc lập, capture camp status=0 |
+
+### Polish pass 11/10/2026
+
+- Combat: impact/projectile/wall/death bursts, short hit-stop, damage-scaled shake,
+  spear arc, projectile trails, dodge streak, hurt feedback and low-health vignette.
+- Readability: preserved actor shader, stronger action readability, ember proximity
+  ring, HUD ember pulse, compact interaction badge and camp flame accents.
+- Environment: retained bounded/cull-safe atmosphere and added camp flame tongues
+  plus altar pulse ceremony without changing collision or quest authority.
+- Verification: full headless suite passed again after the pass:
+  visual 16/16, gameplay 71/71, integration 37/37, runtime 18/18,
+  play regressions 24/24, UI input 18/18, world/audio 3164/3164.
+- Fresh Windows captures regenerated for camp/forest/creek/ruins. Measured 180-frame
+  samples: camp 74.61 FPS / p95 21.57 ms; forest 120.00 / 9.73 ms; creek
+  120.00 / 10.31 ms; ruins 120.02 / 9.91 ms. These are short local samples,
+  not cross-machine guarantees.
 
 Các test API không thay cho một lượt chơi hoàn chỉnh bằng tay. UI input test
 dùng event bàn phím/chuột và slider thực; có tạm ghi cài đặt âm lượng rồi phục hồi.
@@ -50,6 +92,9 @@ settings, gameplay-input. Tất cả lấy từ viewport Godot thực, không ph
 ## Giới hạn chưa nghiệm thu
 
 - Chưa chạy trọn hành trình bằng người chơi thực; mục tiêu 15–20 phút chưa xác nhận.
+- Graphical UI journey was run twice after the polish pass and stopped at the same
+  forest travel deadline after the first two pickups. The bot route is sensitive to
+  obstacle steering; this does not reproduce as a gameplay/runtime suite failure.
 - Chưa xác nhận chất lượng mỹ thuật đạt mức tham chiếu. Công cụ vision cho nhận xét
   ngắn và không nhất quán; không lấy các test số lượng/file làm bằng chứng đồ họa đẹp.
 - Chưa có stress test dài hoặc thử trên nhiều độ phân giải/phần cứng.

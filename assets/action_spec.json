@@ -1,0 +1,15 @@
+{
+  "spear_length":32,
+  "normal_reach":49,
+  "heavy_reach":62,
+  "actions": {
+    "thrust":{"contact":0.08,"duration":0.24},
+    "heavy":{"contact":0.13,"duration":0.38},
+    "throw":{"contact":0.06,"duration":0.32},
+    "charge":{"duration":0.55},
+    "dodge":{"duration":0.22},
+    "hurt":{"duration":0.18},
+    "dead":{"duration":0.4}
+  },
+  "stone_release":{"distance":18,"height":-14}
+}

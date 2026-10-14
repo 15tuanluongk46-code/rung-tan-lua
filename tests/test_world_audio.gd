@@ -55,10 +55,10 @@ func run() -> void:
 				check(child.collision_layer == 1, "solid props block gameplay layer1")
 	check(trees >= 190 and trees <= 210, "approximately 200 varied trees")
 	check(scatter >= 240 and scatter <= 260, "approximately 250 bushes/rocks")
-	check(terrains == 4, "all terrain quadrants instantiated")
+	check(terrains == 6, "all six terrain regions instantiated")
 	print("Layout census: trees=%d scatter=%d solids=%d landmarks=%s" % [trees,scatter,bodies,str(landmarks)])
 	check(int(landmarks.get("tent",0)) >= 4,"shelters for camp NPCs and creek gatherer")
-	check(int(landmarks.get("forge",0)) == 1,"smith has a forge")
+	check(int(landmarks.get("forge",0)) == 2,"smith and Tung each have a forge")
 	check(int(landmarks.get("table",0)) >= 2,"camp/creek work tables")
 	check(int(landmarks.get("column",0)) >= 4 and int(landmarks.get("wall",0)) >= 4,"ruins have authored pillars and walls")
 	check(bodies == art.obstacles.size() and bodies >= 220, "obstacle rectangles match solid prop bodies")
@@ -76,6 +76,11 @@ func run() -> void:
 		for i: int in range(road.size()-1):
 			for step: int in range(41):
 				check(not art.is_blocked(road[i].lerp(road[i+1],step/40.0),24), "connected road has actor-width clearance")
+	for road: PackedVector2Array in content.expansion_roads:
+		for i: int in range(road.size()-1):
+			for step: int in range(41): check(not art.is_blocked(road[i].lerp(road[i+1],step/40.0),24),"southern road clearance")
+	for data: Dictionary in content.expansion_actors()+content.expansion_items()+content.world_events():
+		check(not art.is_blocked(data.pos,18),"safe expansion spawn "+data.id)
 	for rect: Rect2 in art.obstacles:
 		check(art.is_blocked(rect.get_center()), "solid center query")
 		check(art.is_blocked(rect.position-Vector2(2,2),3), "query expands for actor margin")
@@ -101,6 +106,7 @@ func run() -> void:
 	var listener: Node2D = Node2D.new()
 	world.add_child(listener)
 	var camera: Camera2D = Camera2D.new()
+	camera.process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
 	listener.add_child(camera)
 	art.set_listener(listener)
 	var first_tree: Node2D
@@ -109,8 +115,10 @@ func run() -> void:
 			first_tree = node
 			break
 	listener.position = first_tree.position-Vector2(0,50)
+	listener.reset_physics_interpolation()
 	camera.make_current()
-	await process_frame
+	await physics_frame;await physics_frame;await process_frame
+	camera.reset_smoothing();camera.force_update_scroll();art._update_visibility()
 	art.set_process(false)
 	for i: int in range(25): art._process(0.02)
 	var canopy: Sprite2D = first_tree.get_node("Art") as Sprite2D

@@ -22,7 +22,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 SR = 44100
 DURATION = 28
-REGIONS = ("camp", "forest", "creek", "ruins")
+REGIONS = ("camp", "forest", "creek", "ruins", "marsh", "ash", "boss")
 AMBIENTS = ("wind", "water", "birds", "fire")
 SFX_KEYS = ("step", "attack", "hit", "dodge", "stone", "pickup", "heal", "quest", "death", "click", "bow", "magic", "bear")
 
@@ -81,6 +81,9 @@ def music(region: str) -> np.ndarray:
         "forest": (12, 7, 10, 14, 15, 14, 7, 5, 12, 10, 7, 3, 5, 7, 14, 10),
         "creek": (19, 14, 17, 21, 19, 17, 14, 12, 14, 17, 19, 21, 24, 19, 17, 14),
         "ruins": (12, 19, 14, 7, 10, 17, 14, 5, 12, 19, 22, 17, 14, 10, 7, 2),
+        "marsh": (7, 12, 14, 10, 5, 7, 15, 14, 12, 5, 10, 14, 17, 15, 7, 2),
+        "ash": (0, 7, 12, 10, 3, 7, 14, 12, 5, 10, 15, 14, 7, 3, 2, 0),
+        "boss": (0, 12, 7, 15, 0, 14, 7, 17, 3, 15, 10, 19, 5, 17, 14, 12),
     }[region]
     for bar in range(8):
         for index, semitone in enumerate(chords[(bar // 2) % 4]):

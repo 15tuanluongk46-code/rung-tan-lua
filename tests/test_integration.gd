@@ -51,11 +51,13 @@ func run() -> void:
 	main.spawn_projectile(main.player, Vector2.RIGHT, "stone")
 	main.state.hp = 0
 	main.respawn()
+	# Assert the reset before patrol resumes on subsequent physics frames.
+	survivor = main.actor_by_id("melee_1")
+	check(survivor.position.distance_to(survivor.home) < 1, "survivor position resets on death")
 	await process_frame
 	check(main.actor_by_id("melee_0") == null, "killed enemies do not respawn")
 	survivor = main.actor_by_id("melee_1")
 	check(survivor.health.hp == survivor.health.maximum, "survivor health resets on death")
-	check(survivor.position.distance_to(survivor.home) < 1, "survivor position resets on death")
 	check(main.projectiles.get_child_count() == 0, "death clears projectiles")
 	check(main.player.position.distance_to(Vector2(530,1190)) < 10, "death returns player to creek checkpoint")
 	check(main.state.picked.has("herb_0"), "runtime reset preserves pickup ledger")

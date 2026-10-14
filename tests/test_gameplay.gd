@@ -81,7 +81,7 @@ func _initialize() -> void:
 		ids[actor.id] = true
 	check(ids.size() == 28 and census.size() == 13, "28 actors / 13 kinds")
 	check(census == {"player":1,"chief":1,"hunter":1,"healer":1,"smith":1,"gatherer":1,"melee":6,"archer":4,"shaman":2,"bear":2,"deer":3,"rabbit":3,"bird":2}, "exact actor census")
-	check(content.centers.size() == 4, "four connected region definitions")
+	check(content.centers.size() == 6, "six connected region definitions; original four retained")
 	finish()
 
 func finish() -> void:

@@ -1,13 +1,16 @@
 extends Node
 ## No autoload or scene-path dependency. Main owns settings and calls set_region.
 ## Eight pooled voices; attenuation is relative to Main.player, not the camera.
-const REGIONS: Array[String] = ["camp", "forest", "creek", "ruins"]
+const REGIONS: Array[String] = ["camp", "forest", "creek", "ruins", "marsh", "ash", "boss"]
 const SFX_KEYS: Array[String] = ["step", "attack", "hit", "dodge", "stone", "pickup", "heal", "quest", "death", "click", "bow", "magic", "bear"]
 const AMBIENCE: Dictionary = {
 	"camp": {"wind":0.13, "water":0.0, "birds":0.30, "fire":0.50},
 	"forest": {"wind":0.42, "water":0.0, "birds":0.62, "fire":0.0},
 	"creek": {"wind":0.17, "water":0.58, "birds":0.40, "fire":0.12},
-	"ruins": {"wind":0.46, "water":0.0, "birds":0.07, "fire":0.0}}
+	"ruins": {"wind":0.46, "water":0.0, "birds":0.07, "fire":0.0},
+	"marsh":{"wind":0.25,"water":0.4,"birds":0.16,"fire":0.1},
+	"ash":{"wind":0.46,"water":0.0,"birds":0.05,"fire":0.32},
+	"boss":{"wind":0.3,"water":0.0,"birds":0.0,"fire":0.4}}
 const THROTTLES: Dictionary = {"step":0.12, "attack":0.07, "hit":0.055, "dodge":0.10, "stone":0.07, "click":0.075, "quest":0.3}
 var sfx_players: Array[AudioStreamPlayer] = []
 var music_players: Array[AudioStreamPlayer] = []

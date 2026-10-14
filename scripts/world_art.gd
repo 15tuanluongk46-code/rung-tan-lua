@@ -3,14 +3,10 @@ extends Node2D
 ## its sort origin is its feet, not a container origin or texture center.
 const Content = preload("res://scripts/world_content.gd")
 const SEED: int = 641270
-var ROADS: Array[PackedVector2Array] = [
-	PackedVector2Array([Vector2(420,340),Vector2(430,470),Vector2(760,465),Vector2(1060,375),Vector2(1380,380),Vector2(1740,390),Vector2(1980,450)]),
-	PackedVector2Array([Vector2(445,470),Vector2(410,720),Vector2(550,960),Vector2(530,1190),Vector2(760,1200),Vector2(1010,1160),Vector2(1420,1190),Vector2(1830,1190)]),
-	PackedVector2Array([Vector2(1770,400),Vector2(1840,720),Vector2(1730,940),Vector2(1830,1190)]),
-	PackedVector2Array([Vector2(830,1160),Vector2(830,1390)])]
-var CREEK: PackedVector2Array = PackedVector2Array([Vector2(255,800),Vector2(300,920),Vector2(300,1060),Vector2(345,1200),Vector2(325,1370),Vector2(390,1600)])
-const SIZES: Dictionary = {"tree0":Vector2(112,136),"tree1":Vector2(112,136),"tree2":Vector2(112,136),"pine":Vector2(80,132),"bush":Vector2(48,32),"rock":Vector2(48,40),"tent":Vector2(112,94),"table":Vector2(64,48),"forge":Vector2(64,60),"sign":Vector2(48,56),"bridge":Vector2(128,78),"column":Vector2(48,94),"wall":Vector2(96,58)}
-const TINTS: Dictionary = {"camp":Color(0.96,0.90,0.79),"forest":Color(0.79,0.88,0.85),"creek":Color(0.82,0.91,0.89),"ruins":Color(0.78,0.84,0.90)}
+var ROADS: Array[PackedVector2Array] = preload("res://scripts/world_routes.gd").paths("roads")
+var CREEK: PackedVector2Array = preload("res://scripts/world_routes.gd").paths("creek")[0]
+const SIZES: Dictionary = {"tree0":Vector2(112,136),"tree1":Vector2(112,136),"tree2":Vector2(112,136),"pine":Vector2(80,132),"bush":Vector2(48,32),"rock":Vector2(48,40),"tent":Vector2(112,94),"table":Vector2(64,48),"forge":Vector2(64,60),"sign":Vector2(48,56),"bridge":Vector2(128,78),"column":Vector2(48,94),"wall":Vector2(96,58),"charred_tree":Vector2(96,136),"reed":Vector2(64,64),"hut":Vector2(96,88),"tower":Vector2(96,136)}
+const TINTS: Dictionary = {"camp":Color(1.0,0.92,0.81),"forest":Color(0.75,0.88,0.88),"creek":Color(0.80,0.94,1.0),"ruins":Color(0.85,0.81,0.98),"marsh":Color(0.77,0.94,0.9),"ash":Color(1.0,0.85,0.73)}
 var obstacles: Array[Rect2] = []
 var listener: Node2D
 var _world: Node2D
@@ -31,6 +27,7 @@ var _atmosphere: Atmosphere
 var _cull_timer: float = 0.0
 var _clock: float = 0.0
 var _built: bool = false
+var _tower: Node2D
 
 class Atmosphere extends Node2D:
 	var motes: Array[Dictionary] = []
@@ -57,6 +54,7 @@ func build(world: Node2D) -> void:
 	if _built: return
 	_built = true
 	_world = world
+	ROADS.append_array(_content.expansion_roads)
 	position = Vector2.ZERO
 	world.y_sort_enabled = true
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -67,7 +65,8 @@ func build(world: Node2D) -> void:
 		var path: String = "res://assets/props/%s.png" % kind
 		if ResourceLoader.exists(path): _textures[kind] = load(path)
 		else: missing.append(kind)
-	var quadrants: Dictionary = {"camp":Vector2.ZERO,"forest":Vector2(1200,0),"creek":Vector2(0,800),"ruins":Vector2(1200,800)}
+	var quadrants: Dictionary = {}
+	for key: String in Content.REGION_BOUNDS: quadrants[key] = Content.REGION_BOUNDS[key].position
 	for key: String in quadrants:
 		var terrain: Sprite2D = Sprite2D.new()
 		terrain.name = "Terrain_" + key
@@ -75,6 +74,7 @@ func build(world: Node2D) -> void:
 		terrain.centered = false
 		terrain.z_index = -20
 		terrain.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		terrain.self_modulate = {"camp":Color(1.02,0.97,0.88),"forest":Color(0.82,0.96,1.02),"creek":Color(0.84,1.0,1.08),"ruins":Color(0.97,0.88,1.06),"marsh":Color(0.93,1.0,1.04),"ash":Color(1.04,0.96,0.86)}[key]
 		terrain.set_meta("category","terrain")
 		var path: String = "res://assets/terrain/%s.png" % key
 		if ResourceLoader.exists(path): terrain.texture = load(path)
@@ -83,7 +83,9 @@ func build(world: Node2D) -> void:
 	if not missing.is_empty(): push_warning("World art assets not generated/imported (no placeholder substituted): " + ", ".join(missing))
 	_prepare_clearance()
 	_build_landmarks()
+	_build_encounter_cover()
 	_scatter()
+	_build_expansion()
 	_mood = CanvasModulate.new()
 	_mood.name = "WorldMood"
 	_mood.color = _target_tint
@@ -111,20 +113,54 @@ func _radial_texture(size: int, center: Color) -> GradientTexture2D:
 	return texture
 
 func _prepare_clearance() -> void:
-	for data: Dictionary in _content.actors() + _content.items():
+	for data: Dictionary in _content.actors(2) + _content.items(2) + _content.world_events() + _content.optional_items():
 		_protected.append(data.pos)
 	for point: Vector2 in _content.centers.values() + _content.checkpoints.values():
 		_protected.append(point)
 	for point: Vector2 in _protected:
 		var closest: Vector2 = ROADS[0][0]
 		var distance: float = INF
-		for road: PackedVector2Array in ROADS:
+		var candidate_roads: Array[PackedVector2Array] = preload("res://scripts/world_routes.gd").paths("roads") if point.y < 1600 else _content.expansion_roads
+		for road: PackedVector2Array in candidate_roads:
 			for index: int in range(road.size()-1):
 				var candidate: Vector2 = Geometry2D.get_closest_point_to_segment(point,road[index],road[index+1])
 				if candidate.distance_squared_to(point) < distance:
 					closest = candidate
 					distance = candidate.distance_squared_to(point)
 		_connections.append(PackedVector2Array([point,closest]))
+	# Reserved boss court and gate shoulders are never random foliage.
+	_protected.append(Vector2(1960,2140))
+
+func _build_encounter_cover() -> void:
+	# Alternate approaches on safe shoulders; never close required roads.
+	for entry: Dictionary in [
+		{"point":Vector2(1500,345),"kind":"rock"},
+		{"point":Vector2(1570,345),"kind":"rock"},
+		{"point":Vector2(1480,555),"kind":"rock"},
+		{"point":Vector2(790,1300),"kind":"rock"},
+		{"point":Vector2(755,1335),"kind":"rock"},
+		{"point":Vector2(675,1865),"kind":"reed"},
+		{"point":Vector2(1820,1875),"kind":"rock"}]:
+		_place_authored(entry.kind,entry.point,Vector2(26,14) if entry.kind == "rock" else Vector2.ZERO,1.0)
+
+func _build_expansion() -> void:
+	_place_authored("hut",Vector2(400,1720),Vector2(64,20))
+	_place_authored("hut",Vector2(1560,1680),Vector2(64,20))
+	_place_authored("tower",Vector2(1960,2280),Vector2(58,20))
+	_place_authored("forge",Vector2(1750,1740),Vector2(40,18))
+	_place_authored("sign",Vector2(600,1630),Vector2(10,10))
+	_place_authored("sign",Vector2(1795,1630),Vector2(10,10))
+	_place_authored("sign",Vector2(1090,1880),Vector2(10,10))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 818171
+	for i: int in range(150):
+		var point := Vector2(rng.randf_range(60,2340),rng.randf_range(1650,2340)).round()
+		if Rect2(1650,2060,630,290).has_point(point): continue
+		if not _clear_placement(point,28,true): continue
+		var kind: String = "reed" if point.x < 1200 else "charred_tree"
+		_prop(kind,point,Vector2.ZERO if kind == "reed" else Vector2(12,9),"expansion",1.0)
+	_add_light(Vector2(480,1780),Color("93d2bc"),0.55,1.0,false)
+	_add_light(Vector2(1630,1770),Color("ffc17b"),0.65,1.0,false)
 
 func _distance_to_path(point: Vector2, path: PackedVector2Array) -> float:
 	var distance: float = INF
@@ -191,9 +227,12 @@ func _build_landmarks() -> void:
 		deck.position.y += 39
 
 func _place_authored(kind: String, point: Vector2, solid: Vector2, factor: float = 1.0) -> void:
+	var sign_target: String = ""
+	if kind == "sign": sign_target = "forest" if point.y<800 else ("ruins" if point.y<1600 else ("marsh" if point.x<800 else ("ash" if point.x<1400 else "tower")))
 	var radius: float = solid.length() * 0.5 * factor
 	if _clear_placement(point,radius,false):
-		_prop(kind,point,solid,"landmark",factor)
+		var node: Node2D = _prop(kind,point,solid,"landmark",factor)
+		if kind == "sign": configure_sign(node,sign_target)
 		return
 	# Content connectors are authoritative. Move furniture to the nearest safe
 	# shoulder rather than silently dropping the building or blocking an NPC.
@@ -201,9 +240,18 @@ func _place_authored(kind: String, point: Vector2, solid: Vector2, factor: float
 		for step: int in range(16):
 			var candidate: Vector2 = point+Vector2.from_angle(-PI*0.5+TAU*step/16.0)*ring
 			if _clear_placement(candidate,radius,false):
-				_prop(kind,candidate.round(),solid,"landmark",factor)
+				var node: Node2D = _prop(kind,candidate.round(),solid,"landmark",factor)
+				if kind == "sign": configure_sign(node,sign_target)
 				return
 	push_warning("No safe authored prop position: %s at %s" % [kind,str(point)])
+
+func configure_sign(node: Node2D, destination: String) -> void:
+	node.set_meta("destination",destination)
+	var label: Label = node.get_node("Directions")
+	label.text = {"forest":"→ Rừng Sâu","ruins":"→ Phế Tích","marsh":"↓ Đầm Sương","ash":"→ Đồi Than","tower":"↓ Tháp Lửa"}[destination]
+	if destination in ["marsh","tower"]:
+		var texture: Texture2D = load("res://assets/props/sign_down.png")
+		node.get_node("Art").texture = texture
 
 func _scatter() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -237,6 +285,7 @@ func _prop(kind: String, point: Vector2, solid: Vector2, category: String, facto
 	node.set_meta("kind",kind)
 	_world.add_child(node)
 	_props.append(node)
+	if kind == "tower": _tower = node
 	_roots.append(point)
 	var size: Vector2 = SIZES[kind]
 	var shadow: Sprite2D = Sprite2D.new()
@@ -249,10 +298,26 @@ func _prop(kind: String, point: Vector2, solid: Vector2, category: String, facto
 	sprite.name = "Art"
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.texture = _textures.get(kind) as Texture2D
+	if kind in ["reed","charred_tree"]:
+		var variant: int = posmod(int(point.x*7+point.y*11),3)
+		var variant_path: String = "res://assets/props/%s_variant%d.png" % [kind,variant]
+		if variant > 0 and ResourceLoader.exists(variant_path): sprite.texture = load(variant_path)
 	sprite.centered = false
 	sprite.position = Vector2(-size.x*0.5,-size.y)*factor
 	sprite.scale = Vector2.ONE*factor
 	node.add_child(sprite)
+	if kind == "sign":
+		var caption := Label.new()
+		caption.text = "→ Rừng Sâu" if point.y < 800 else ("→ Phế Tích" if point.y < 1600 else ("↓ Đầm Sương" if point.x < 800 else ("→ Đồi Than" if point.x < 1400 else "↓ Tháp Lửa")))
+		caption.position = Vector2(-48,-70)
+		caption.size = Vector2(96,18)
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.add_theme_font_size_override("font_size",9)
+		caption.add_theme_color_override("font_color",Color("d8c69c"))
+		caption.add_theme_color_override("font_shadow_color",Color("162632"))
+		caption.add_theme_constant_override("shadow_offset_y",1)
+		caption.name = "Directions"
+		node.add_child(caption)
 	if category == "tree":
 		# Separate the bottom trunk from the canopy: transparency never erases
 		# the solid base, so cover remains readable while the actor is behind.
@@ -351,6 +416,8 @@ func _update_visibility() -> void:
 	var view: Rect2 = rect.grow(180)
 	for node: Node2D in _props:
 		node.visible = view.has_point(node.position)
+		if node.has_node("Directions"):
+			node.get_node("Directions").visible = is_instance_valid(listener) and listener.position.distance_to(node.position)<100
 	_near_trees.clear()
 	for tree: Dictionary in _trees:
 		if tree.root.visible:
@@ -363,7 +430,8 @@ func _update_visibility() -> void:
 
 func _process(delta: float) -> void:
 	if not _built: return
-	_clock += delta
+	var game: Node = _world.get_parent()
+	if game.get("settings") == null or not game.settings.reduced_motion: _clock += delta
 	_cull_timer -= delta
 	if _cull_timer <= 0:
 		_cull_timer = 0.10
@@ -372,6 +440,15 @@ func _process(delta: float) -> void:
 		_atmosphere.queue_redraw()
 	_mood.color = _mood.color.lerp(_target_tint,1.0-exp(-delta*1.2))
 	var player: Node2D = _player()
+	# Tall tower is foreground architecture; reveal actors inside its silhouette.
+	for prop: Node2D in [_tower] if is_instance_valid(_tower) else []:
+		if not prop.visible: continue
+		var target_alpha: float = 1.0
+		if player != null:
+			var relative: Vector2 = player.global_position-prop.global_position
+			if absf(relative.x) < 52 and relative.y < 8 and relative.y > -136: target_alpha = 0.27
+		var sprite: Sprite2D = prop.get_node("Art")
+		sprite.modulate.a = move_toward(sprite.modulate.a,target_alpha,delta*5)
 	for tree: Dictionary in _near_trees:
 		var opacity: float = 1.0
 		if player != null:
@@ -382,5 +459,5 @@ func _process(delta: float) -> void:
 		canopy.modulate.a = move_toward(canopy.modulate.a,opacity,delta*3.5)
 	for index: int in range(_lights.size()):
 		var light: PointLight2D = _lights[index]
-		if light.enabled and index < 3:
+		if light.enabled and index < 3 and (game.get("settings") == null or not game.settings.reduced_flash):
 			light.energy = float(light.get_meta("base_energy"))*(1.0+0.035*sin(_clock*5.3+index)+0.02*sin(_clock*9.7))

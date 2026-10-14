@@ -64,6 +64,7 @@ func run() -> void:
 	game.noise(foe.position,100)
 	check(foe.ai_state == "investigate","noise starts hostile investigation")
 	# Dodge must be unavailable before 0.8 seconds while granting i-frames.
+	game._process(0.08) # Release the newly implemented hit-stop from the projectile hit.
 	game.player.dodge_cooldown = 0
 	Input.action_press("dodge")
 	game.mode = "playing"
@@ -74,6 +75,8 @@ func run() -> void:
 	# Arrow hit not overwritten by healing synchronization and death modal.
 	game.player.health.invulnerable = 0
 	game.player.receive_hit(500,"fatal",foe)
+	check(game.mode == "dying","lethal hit first plays visual death phase")
+	game._process(.41)
 	check(game.mode == "dead" and game.state.hp == 0,"real lethal hit opens death UI")
 	game.respawn()
 	await process_frame
